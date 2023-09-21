@@ -1,0 +1,27 @@
+
+class Main {
+public static void main ( String [] a ){
+System.out.println (new Pair());
+}
+}class Pair {
+	A fst;
+	A snd;
+	boolean t;
+
+	Pair setFields(Pair this, A myFst,A mySnd) {
+		snd = mySnd;
+		fst=myFst.pop();
+		return this;
+	}
+
+}
+
+class A {
+	
+	
+
+	Pair duplicate(A this) {
+		Pair p;
+		return p.setFields(this,this);
+	}
+}

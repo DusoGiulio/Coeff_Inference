@@ -1,0 +1,25 @@
+class Main {
+public static void main ( String [] a ){
+System.out.println (new Punto());
+}
+}
+class Punto 
+{
+	boolean[] p;
+	int[] c;
+	Punto o;
+	boolean d;
+	
+	boolean Iof()
+	{
+		boolean h;
+		h=this.arrelem(1);
+		return h;
+	}
+	static boolean arrelem( int a)
+	{
+	    return this;
+	}
+
+
+}

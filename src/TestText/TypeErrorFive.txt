@@ -1,0 +1,26 @@
+class Main {
+public  static void main ( String [] a ){
+System.out.println (new Punto().cast());
+}
+}
+class Punto extends pippo
+{
+	Punto o;
+
+	 Punto cast()
+	{	
+		pip=(pippo)pip;
+		o=(Punto)pip;
+		pip=(A)o;
+		return (Punto)pip;
+	}
+		
+
+}
+class pippo
+{
+	boolean[] pr;
+	pippo pip;
+}
+class A{}
+

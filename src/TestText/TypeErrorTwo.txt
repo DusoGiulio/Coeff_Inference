@@ -1,0 +1,25 @@
+class Main {
+public  static void main ( String [] a ){
+System.out.println (new Punto().cast().ElseIf(2));
+}
+}
+class Punto
+{
+	boolean[] p;
+	int[] c;
+	Punto o;
+
+	int ElseIf(int a)
+	{
+		if(!p[2] && p[1])
+			c[1]=a;
+        else 
+        	if(a<5)
+        		a=1;
+        	else
+        		a=2+2;
+            c[1]=0;
+	    return p[1];
+	}
+
+}
