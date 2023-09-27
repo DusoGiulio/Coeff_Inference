@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 
 import ANTLR4.miniJavaLexer;
 import ANTLR4.miniJavaParser;
@@ -26,54 +29,93 @@ import Visitor.Fill_STC_STM;
 import Visitor.TypeChecking;
 
 class Test {
+	
+	@SuppressWarnings("deprecation")
+	private  AST albero=  AST.newAST(AST.JLS16);
 
-	//Testa il metodo op, che eseguira nello stesso modo sum e sup
+	//somma fra due classi uguali
 	@org.junit.jupiter.api.Test
-	void Coeffect_sum() {
-		Coeffect cf=new Coeffect( "Nat.One()","Nat"); 
-		Coeffect cf1=new Coeffect( "Nat.One()","Nat");
-		Coeffect cf2=new Coeffect( "new Omega()","Omega");
-		Coeffect cf3=new Coeffect( "Affinity.One()","Affinity");
-		//somma fra due classi uguali
+	void Coeffect_sum1() {
+		Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+		Coeffect cf1=new Coeffect( this.createMethInv("Nat", "One"),"Nat");
 		cf=cf.op(cf1, "sum");
-		assertEquals( "Nat.One().sum(Nat.One())",cf.getCoefExpr());
-		//somma fra una classe nat e una non nat
-		cf=cf1.op(cf2, "sum");
-		assertEquals("(Omega.fromNat(Nat.One())).sum(new Omega())",cf.getCoefExpr());
-		//somma fra una classe nat e una non nat
-		cf=cf2.op(cf1, "sum");
-		assertEquals("new Omega().sum(Omega.fromNat(Nat.One()))",cf.getCoefExpr());
-		//somma fra una classe non nat e una non nat
-		cf=cf2.op(cf3, "sum");
-		assertEquals( "new Triv()",cf.getCoefExpr());	
+		assertEquals( "Nat.One().sum(Nat.One())",cf.getCoefExpr().toString());	
 	}
-	//Testa il metodo op, che eseguira mult
+	//somma fra una classe nat e una non nat
+	@org.junit.jupiter.api.Test
+	void Coeffect_sum2() {
+		Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+		Coeffect cf1=new Coeffect( this.createMethInv("Nat", "One"),"Nat");
+		Coeffect cf2=new Coeffect( this.createNewClass("Omega"),"Omega");
+		cf=cf1.op(cf2, "sum");
+		assertEquals("new Omega().fromNat(Nat.One()).sum(new Omega())",cf.getCoefExpr().toString());
+	}
+	//somma fra una classe nat e una non nat
+	@org.junit.jupiter.api.Test
+	void Coeffect_sum3() {
+		Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+		Coeffect cf1=new Coeffect( this.createMethInv("Nat", "One"),"Nat");
+		Coeffect cf2=new Coeffect( this.createNewClass("Omega"),"Omega");
+		cf=cf2.op(cf1, "sum");
+		assertEquals("new Omega().sum(new Omega().fromNat(Nat.One()))",cf.getCoefExpr().toString());
+	}
+	//somma fra una classe non nat e una non nat
+	@org.junit.jupiter.api.Test
+	void Coeffect_sum4() {
+		Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat");
+		Coeffect cf2=new Coeffect( this.createNewClass("Omega"),"Omega");
+		Coeffect cf3=new Coeffect( this.createMethInv("Affinity", "One"),"Affinity");
+		cf=cf2.op(cf3, "sum");
+		assertEquals( "new Triv()",cf.getCoefExpr().toString());	
+	}	
+	
+	
+	
+	//moltiplico fra due classi uguali
 		@org.junit.jupiter.api.Test
-		void Coeffect_mult() {
-			Coeffect cf=new Coeffect( "Nat.One()","Nat"); 
-			Coeffect cf1=new Coeffect( "Nat.Zero()","Nat");
-			Coeffect cf2=new Coeffect( "new Omega()","Omega");
-			Coeffect cf3=new Coeffect( "Affinity.One()","Affinity");
-			//moltiplico fra due classi uguali
+		void Coeffect_mult1() {
+			Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+			Coeffect cf1=new Coeffect( this.createMethInv("Nat", "Zero"),"Nat");
 			cf=cf.op(cf1, "mult");
-			assertEquals(cf.getCoefExpr(), "Nat.One().mult(Nat.Zero())");
-			//moltiplico fra una classe nat e una non nat
-			cf=cf1.op(cf2, "mult");
-			assertEquals(cf.getCoefExpr(), "(Omega.fromNat(Nat.Zero())).mult(new Omega())");
-			//moltiplico fra una classe nat e una non nat
-			cf=cf2.op(cf1, "mult");
-			assertEquals(cf.getCoefExpr(), "new Omega().mult(Omega.fromNat(Nat.Zero()))");
-			//moltiplico fra una classe non nat e una non nat
-			cf=cf2.op(cf3, "mult");
-			assertEquals(cf.getCoefExpr(), "new Triv()");	
+			assertEquals(cf.getCoefExpr().toString(), "Nat.One().mult(Nat.Zero())");
 		}
+		//moltiplico fra una classe nat e una non nat
+		@org.junit.jupiter.api.Test
+		void Coeffect_mult2() {
+			Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+			Coeffect cf1=new Coeffect( this.createMethInv("Nat", "Zero"),"Nat");
+			Coeffect cf2=new Coeffect( this.createNewClass("Omega"),"Omega");
+			cf=cf1.op(cf2, "mult");
+			assertEquals("new Omega().fromNat(Nat.Zero()).mult(new Omega())",cf.getCoefExpr().toString());
+		}
+		//moltiplico fra una classe nat e una non nat
+		@org.junit.jupiter.api.Test
+		void Coeffect_mult3() {
+			Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+			Coeffect cf1=new Coeffect( this.createMethInv("Nat", "Zero"),"Nat");
+			Coeffect cf2=new Coeffect( this.createNewClass("Omega"),"Omega");
+			cf=cf2.op(cf1, "mult");
+			assertEquals("new Omega().mult(new Omega().fromNat(Nat.Zero()))",cf.getCoefExpr().toString());
+		}
+		//moltiplico fra una classe non nat e una non nat
+		@org.junit.jupiter.api.Test
+		void Coeffect_mult4() {
+			Coeffect cf=new Coeffect( this.createMethInv("Nat", "One"),"Nat"); 
+			Coeffect cf2=new Coeffect( this.createNewClass("Omega"),"Omega");
+			Coeffect cf3=new Coeffect( this.createMethInv("Affinity", "One"),"Affinity");
+			cf=cf2.op(cf3, "mult");
+			assertEquals( "new Triv()",cf.getCoefExpr().toString());
+		}
+		
+		
+		
 	//Testa i metodi di findElement, addElement 
 	@org.junit.jupiter.api.Test
 	void CoeffectTable_find_add() {
 		CoeffectTable cft= new CoeffectTable();
-		cft.addElement("a",new Coeffect( "Nat.One()","Nat"));
-		cft.addElement("b",new Coeffect( "Nat.One()","Nat"));
-		assertEquals(cft.findElement("a").getCoefExpr(),"Nat.One()");
+		cft.addElement("a",new Coeffect( this.createMethInv("Nat", "One"),"Nat"));
+		cft.addElement("b",new Coeffect( this.createMethInv("Nat", "One"),"Nat"));
+		assertEquals(cft.findElement("a").getCoefExpr().toString(),"Nat.One()");
 		assertNotNull(cft.findElement("a"));
 		assertNull(cft.findElement("c"));
 		
@@ -315,9 +357,9 @@ class Test {
 		ArrayList<NodeAST> AST=visitor.visitProgram(p);
 		Fill_STC_STM firstvisit;
 		firstvisit = new Fill_STC_STM(AST);
-		TypeCheckingException exception = assertThrows(TypeCheckingException.class, () -> {
+		SemanticException exception = assertThrows(SemanticException.class, () -> {
 	     new TypeChecking(AST, firstvisit.getClassST());});
-		assertEquals("Errore di tipo alla riga -> 21", exception.getMessage());
+		assertEquals("Errore semantico alla riga -> 21", exception.getMessage());
 		
 	}
 	
@@ -350,7 +392,7 @@ class Test {
 		ArrayList<NodeAST> AST=visitor.visitProgram(p);;
 		SemanticException exception = assertThrows(SemanticException.class, () -> {
 			new Fill_STC_STM(AST);});
-		assertEquals("Errore sintattico alla riga -> 6", exception.getMessage());
+		assertEquals("Errore semantico alla riga -> 6", exception.getMessage());
 		
 	}
 	
@@ -526,6 +568,21 @@ class Test {
 			new CoeffDefinitioinCheck(AST);;});
 		assertEquals("Errore dichiarazione coeffetti alla riga -> 57", exception.getMessage());
 		
+	}
+	
+	private MethodInvocation createMethInv(String func, String arg) 
+	{
+		MethodInvocation mi= albero.newMethodInvocation();
+	     mi.setName(albero.newSimpleName(arg));
+	     mi.setExpression(albero.newSimpleName(func));
+	     return mi;
+	}
+	
+	private ClassInstanceCreation createNewClass(String nameClass) 
+	{
+		ClassInstanceCreation newTriv = albero.newClassInstanceCreation();
+		newTriv.setType(albero.newSimpleType(albero.newSimpleName(nameClass)));
+		return newTriv;
 	}
 
 }

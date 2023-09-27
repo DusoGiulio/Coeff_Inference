@@ -2,6 +2,11 @@ package ResultGenerator;
 
 import java.util.ArrayList;
 
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.Expression;
+
 import ASTnodes.Class.NodeAST;
 import ASTnodes.Class.NodeId;
 import ASTnodes.Decl.ClassDecl;
@@ -24,21 +29,22 @@ public class SurceCodeComposer {
     private ClassSymbolTable classST;
     private String codiceSorgente = " ";
     private String destinazioneFile;
-    private ArrayList<NodeAST> AST;
-
+    private ArrayList<NodeAST> ASt;
+    private ASTParser parser;
     /**
      * Costruttore della classe.
      *
-     * @param AST           L'elenco dei nodi dell'AST MiniJava.
+     * @param ASt           L'elenco dei nodi dell'AST MiniJava.
      * @param classST       La tabella dei simboli delle classi.
      * @param indirizzoFile L'indirizzo completo del file in cui scrivere il codice sorgente.
      */
-    public SurceCodeComposer(ArrayList<NodeAST> AST, ClassSymbolTable classST, String indirizzoFile) {
+    public SurceCodeComposer(ArrayList<NodeAST> ASt, ClassSymbolTable classST, String indirizzoFile) {
         this.setDestinazioneFile(destinazioneFile);
         this.setClassST(classST);
+        
         this.codiceSorgente = this.codiceSorgente.concat("package ResultGenerator;");
-        this.AST = AST;
-        for (NodeAST node : this.AST) {
+        this.ASt = ASt;
+        for (NodeAST node : this.ASt) {
             if (node instanceof ClassDecl) {
                 ClassDecl c = (ClassDecl) node;
                 if (((ClassTypeDescriptor) c.getType()).isCoeff() == Coef.COEFF || ((ClassTypeDescriptor) c.getType()).isCoeff() == Coef.AUXCOEF) {
@@ -93,7 +99,15 @@ public class SurceCodeComposer {
     private void visitMethCoeffTable(Attribute attr) {
         for (Element el : attr.getCoef().getCoeffectTable()) {
             VarCoeff coeffect = this.findCoef(attr, el.id);
-            Coeffect cf = new Coeffect(coeffect.getExpCoeff().toString(), coeffect.getClassCoeff().toString());
+            parser = ASTParser.newParser(AST.JLS16);
+   	     	parser.setKind(ASTParser.K_EXPRESSION);
+   	     	parser.setBindingsRecovery(true);
+   	     	parser.setResolveBindings(true);
+   	     	parser.setCompilerOptions(JavaCore.getOptions());
+            parser.setSource(coeffect.getExpCoeff().toString().toCharArray());
+			Expression expr = (Expression) parser.createAST(null);
+
+            Coeffect cf = new Coeffect(expr, coeffect.getClassCoeff().toString());
             if (el.coef.getCoefClass().toString().contains("Triv")) {
                 this.codiceSorgente = this.codiceSorgente.concat(this.sys("\"" + el.id + " |\"" + "+" + "true" + "", ""));
                 this.codiceSorgente = this.codiceSorgente.concat(this.syspl("----------------", "\t------------------------"));
