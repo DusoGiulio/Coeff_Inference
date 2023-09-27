@@ -3,6 +3,13 @@ package Visitor;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+
 import ASTnodes.Class.*;
 import ASTnodes.Decl.*;
 import ASTnodes.Exp.*;
@@ -23,6 +30,8 @@ public class CoeffInference {
 	private ClassSymbolTable classST;
 	private String ActualClass;   
 	private Attribute actualMeth;  
+	private  AST albero;
+	private ASTParser  parser;
 
 	/**
      * Crea un oggetto CoeffInference.
@@ -31,9 +40,13 @@ public class CoeffInference {
      * @param classST La tabella dei simboli delle classi.
      * @throws TypeCheckingException Viene lanciata se si verificano errori durante il controllo dei coeffetti.
      */
+	@SuppressWarnings("deprecation")
 	public CoeffInference(ArrayList<NodeAST> ast, ClassSymbolTable classST) throws TypeCheckingException {
 		this.ast = ast;
 		this.classST = classST;
+		 albero = AST.newAST(AST.JLS16);
+		 // Configura il parser AST
+	    
 	}
 
 	   /**
@@ -115,7 +128,9 @@ public class CoeffInference {
 				//Seid è un campo della classe
 				if (this.findAttr(id).getType() instanceof ErrorTypeDescriptor) {
 				//Aggiungo a CT1 new Triv, Triv
-				CT1= (CT1.mult(new Coeffect("new Triv()", "Triv")));
+				ClassInstanceCreation newTriv = albero.newClassInstanceCreation();
+				newTriv.setType(albero.newSimpleType(albero.newSimpleName("Triv")));
+				CT1= (CT1.mult(new Coeffect(newTriv, "Triv")));
 				//duplico la tabella
 				//ritorno la coppia di tabelle globali e correnti sommandogli CT1
 				return new PairCT(CT1.duplicate().sum(PCT.getCTGlobal()),CT1.duplicate().sum(PCT.getCTCurrent()));
@@ -146,14 +161,16 @@ public class CoeffInference {
 				return new PairCT(PCT.getCTGlobal().sum(CTsExp.getCTGlobal()),PCT.getCTCurrent().sum(CTsExp.getCTCurrent()));
 			}else 
 			{	
-				//Se id è un campo della classe
+				/*//Se id è un campo della classe
 				if (this.findAttr(id).getType() instanceof ErrorTypeDescriptor) {
 				//Aggiungo a CT1 new Triv, Triv
-				CT1= (CT1.mult(new Coeffect("new Triv()", "Triv")));
+			    ClassInstanceCreation newTriv = albero.newClassInstanceCreation();
+			    newTriv.setType(albero.newSimpleType(albero.newSimpleName("Triv")));
+				CT1= (CT1.mult(new Coeffect(newTriv, "Triv")));
 				//duplico la tabella
 				//ritorno la coppia di tabelle globali e correnti sommandogli CT1
 				return new PairCT(CT1.duplicate().sum(PCT.getCTGlobal()),CT1.duplicate().sum(PCT.getCTCurrent()));
-				}
+				}*/
 				
 				//Se id non è presente in getCurrent allora lo sommo sia a l globale che al current
 				return new PairCT(CT1.duplicate().sum(PCT.getCTGlobal()),CT1.duplicate().sum(PCT.getCTCurrent()));
@@ -215,17 +232,18 @@ public class CoeffInference {
 			Attribute att = this.findAttr(((Id) exp).getId().getName());
 			TypeDescriptor td = att.getType();
 			if (td instanceof CoeffectTypeDescriptor) {
-					ct.addElement(((Id) exp).getId().getName(),new Coeffect("Nat.one()", "Nat" ));
+					ct.addElement(((Id) exp).getId().getName(),new Coeffect(this.createMethInv("Nat", "one"), "Nat" ));
 
 			} else {
-				ct.addElement("this", new Coeffect("Nat.one()", "Nat"));
+
+				ct.addElement("this", new Coeffect(this.createMethInv("Nat", "one"), "Nat"));
 			}
 			return ct;
 		}
 		// THIS
 		else if (exp instanceof This) {
-			CoeffectTable ct = new CoeffectTable();
-			ct.addElement("this", new Coeffect("Nat.one()", "Nat"));
+			CoeffectTable ct = new CoeffectTable();		
+			ct.addElement("this", new Coeffect(this.createMethInv("Nat", "one"), "Nat"));
 			return ct;
 		}
 		// ARRAY ELEM
@@ -263,14 +281,32 @@ public class CoeffInference {
 			if(Formals.get(i).getId().getName().equals("this")) 
 			{
 				VarCoeff cft=((CoeffectTypeDescriptor)Formals.get(i).getId().getType()).getVarCoeff();
-				cfAcc=cfThis.mult( new Coeffect(cft.getExpCoeff().toString(),cft.getClassCoeff()).supOne());
+				
+				 parser = ASTParser.newParser(AST.JLS16);
+			     parser.setKind(ASTParser.K_EXPRESSION);
+			     parser.setBindingsRecovery(true);
+			     parser.setResolveBindings(true);
+			     parser.setCompilerOptions(JavaCore.getOptions());
+				parser.setSource(cft.getExpCoeff().toString().toCharArray());
+				Expression expr = (Expression) parser.createAST(null);
+				 
+				cfAcc=cfThis.mult( new Coeffect(expr,cft.getClassCoeff()).supOne());
 				i++;
 			}
 			for(int j=i;j<((CallFuncObj) exp).getRexp().size();j++) 
 			{
 				CoeffectTable cf = this.visitExp(((CallFuncObj) exp).getRexp().get(j));
 				VarCoeff cft=((CoeffectTypeDescriptor)Formals.get(j).getId().getType()).getVarCoeff();
-				cfThis=cf.mult(new Coeffect(cft.getExpCoeff().toString(),cft.getClassCoeff()).supOne());
+				
+				 parser = ASTParser.newParser(AST.JLS16);
+			     parser.setKind(ASTParser.K_EXPRESSION);
+			     parser.setBindingsRecovery(true);
+			     parser.setResolveBindings(true);
+			     parser.setCompilerOptions(JavaCore.getOptions());
+				 parser.setSource(cft.getExpCoeff().toString().toCharArray());
+				 Expression expr = (Expression) parser.createAST(null);
+				 
+				cfThis=cf.mult(new Coeffect(expr,cft.getClassCoeff()).supOne());
 				cfAcc=cfAcc.sum(cfThis);
 			}
 			return cfAcc;
@@ -292,6 +328,14 @@ public class CoeffInference {
 		return null;
 	}
 
+	
+	private MethodInvocation createMethInv(String func, String arg) 
+	{
+		MethodInvocation mi= albero.newMethodInvocation();
+	     mi.setName(albero.newSimpleName(arg));
+	     mi.setExpression(albero.newSimpleName(func));
+	     return mi;
+	}
 	
 	private Attribute findAttr(String id) {
 		for (NodeId nId : this.actualMeth.getFormals().getSymbolTable().keySet()) {
@@ -350,6 +394,14 @@ public class CoeffInference {
 		return new ErrorTypeDescriptor(0);
 	}
 	
+	public AST getAlbero() {
+		return albero;
+	}
+
+	public void setAlbero(AST albero) {
+		this.albero = albero;
+	}
+
 	private class PairCT {
 		
 		private CoeffectTable CTGlobal;
