@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.eclipse.jdt.core.dom.*;
 
 import ANTLR4.miniJavaLexer;
 import ANTLR4.miniJavaParser;
@@ -37,14 +36,8 @@ public class MainMiniJava {
      * @throws IOException In caso di errori di input/output.
      */
 	public static void main(String[] args) throws IOException{
-		
-        @SuppressWarnings("deprecation")
-		AST ast= AST.newAST(AST.JLS16);
-        MethodInvocation mi= ast.newMethodInvocation();
-        mi.setName(ast.newSimpleName("one"));
-        mi.setExpression(ast.newSimpleName("Nat"));
-        System.out.println(mi.toString());
-		//creo un char stream, posso inserire sia un file di testo che una stringa	
+        
+        System.out.println("Senza concatenazione di stringhe");		//creo un char stream, posso inserire sia un file di testo che una stringa	
 		FileInputStream inputStream=null;
 		String sep= FileSystems.getDefault().getSeparator();
 		String file="CoefInference1.txt";
