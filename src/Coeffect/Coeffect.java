@@ -1,5 +1,11 @@
 package Coeffect;
 
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+
 /**
  * La classe Coeffect rappresenta un coeffetto che può essere utilizzato
  * per rappresentare il co-effetto associato a variabili di tipo co-effetto.
@@ -7,17 +13,19 @@ package Coeffect;
  */
 public class Coeffect {
 
-    private String coefExpr;
+    private Expression coefExpr;
     private String coefClass;
+    @SuppressWarnings("deprecation")
+	private AST ast = AST.newAST(AST.JLS16);
 
     /**
      * Crea un nuovo coeffetto con l'espressione e la classe specificate.
      * 
-     * @param coefExpr  L'espressione associata al coeffetto.
+     * @param mi  L'espressione associata al coeffetto.
      * @param coefClass La classe di coeffetto (ad esempio, "Nat" o "Triv").
      */
-    public Coeffect(String coefExpr, String coefClass) {
-        this.coefExpr = coefExpr;
+    public Coeffect(Expression mi, String coefClass) {
+        this.coefExpr = mi;
         this.coefClass = coefClass;
     }
 
@@ -26,7 +34,7 @@ public class Coeffect {
      * 
      * @return L'espressione associata al coeffetto.
      */
-    public String getCoefExpr() {
+    public Expression getCoefExpr() {
         return this.coefExpr;
     }
 
@@ -35,7 +43,7 @@ public class Coeffect {
      * 
      * @param coefExpr La nuova espressione da associare al coeffetto.
      */
-    public void setCoefExpr(String coefExpr) {
+    public void setCoefExpr(Expression coefExpr) {
         this.coefExpr = coefExpr;
     }
 
@@ -63,11 +71,11 @@ public class Coeffect {
      * @return Il risultato dell'operazione "sup".
      */
     public Coeffect supOne() {
-        if (this.coefClass.equals("Nat")) {
-            return this.op(new Coeffect("Nat.one()", "Nat"), "sup");
-        } else {
-            return this.op(new Coeffect("Nat.one()", "Nat"), "sup");
-        }
+    	
+    	MethodInvocation mi= ast.newMethodInvocation();
+        mi.setName(ast.newSimpleName("one"));
+        mi.setExpression(ast.newSimpleName("Nat"));
+    	return this.op(new Coeffect(mi, "Nat"), "sup");
     }
 
     /**
@@ -89,22 +97,58 @@ public class Coeffect {
         }
     }
 
-    private Coeffect sameClass(String op, Coeffect other) {
-        return new Coeffect(this.coefExpr + "." + op + "(" + other.coefExpr + ")", other.coefClass);
+    @SuppressWarnings("unchecked")
+	private Coeffect sameClass(String op, Coeffect other) {
+    	
+    	MethodInvocation opInvocation = ast.newMethodInvocation();
+        opInvocation.setName(ast.newSimpleName(op));
+        opInvocation.setExpression((Expression) ASTNode.copySubtree(ast, this.coefExpr));
+        opInvocation.arguments().add((Expression) ASTNode.copySubtree(ast,other.coefExpr));
+        return new Coeffect(opInvocation, other.coefClass);
     }
 
-    private Coeffect thisNatClass(String op, Coeffect other) {
-        String exp = "(" + other.coefClass + ".fromNat(" + this.coefExpr + "))." + op + "(" + other.coefExpr + ")";
-        return new Coeffect(exp, other.coefClass);
+    @SuppressWarnings("unchecked")
+	private Coeffect thisNatClass(String op, Coeffect other) {
+       // String exp = "(" + other.coefClass + ".fromNat(" + this.coefExpr + "))." + op + "(" + other.coefExpr + ")";
+        
+        MethodInvocation fromNat = ast.newMethodInvocation();
+        fromNat.setName(ast.newSimpleName("fromNat"));
+        fromNat.setExpression((Expression) ASTNode.copySubtree(ast,other.coefExpr));
+        fromNat.arguments().add((Expression) ASTNode.copySubtree(ast, this.coefExpr));
+        
+        MethodInvocation opInvocation = ast.newMethodInvocation();
+        opInvocation.setName(ast.newSimpleName(op));
+        opInvocation.setExpression(fromNat);
+        opInvocation.arguments().add((Expression) ASTNode.copySubtree(ast,other.coefExpr));
+        
+        return new Coeffect(opInvocation, other.coefClass);
     }
 
-    private Coeffect otherNatClass(String op, Coeffect other) {
-        String exp = this.coefExpr + "." + op + "(" + this.coefClass + ".fromNat(" + other.coefExpr + "))";
-        return new Coeffect(exp, this.coefClass);
+    @SuppressWarnings("unchecked")
+	private Coeffect otherNatClass(String op, Coeffect other) {
+       // String exp = this.coefExpr + "." + op + "(" + this.coefClass + ".fromNat(" + other.coefExpr + "))";
+        
+        
+        
+        MethodInvocation opInvocation = ast.newMethodInvocation();
+        opInvocation.setName(ast.newSimpleName(op));
+        opInvocation.setExpression((Expression) ASTNode.copySubtree(ast, this.coefExpr));
+        
+        MethodInvocation fromNat = ast.newMethodInvocation();
+        fromNat.setName(ast.newSimpleName("fromNat"));
+        fromNat.setExpression((Expression) ASTNode.copySubtree(ast, this.coefExpr));
+        fromNat.arguments().add((Expression) ASTNode.copySubtree(ast,other.coefExpr));
+        
+        opInvocation.arguments().add(fromNat);
+        
+        return new Coeffect(opInvocation, this.coefClass);
     }
 
     private Coeffect noNatClass(String op, Coeffect other) {
-        return new Coeffect("new Triv()", "Triv");
+    	
+    	ClassInstanceCreation newTriv = ast.newClassInstanceCreation();
+		newTriv.setType(ast.newSimpleType(ast.newSimpleName("Triv")));
+        return new Coeffect(newTriv, "Triv");
     }
     
     /**
