@@ -9,19 +9,17 @@ import java.util.ArrayList;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import ANTLR4.miniJavaLexer;
-import ANTLR4.miniJavaParser;
-import ANTLR4.miniJavaParser.ProgramContext;
-import ASTnodes.Class.NodeAST;
-import Exceptioin.SemanticException;
-import Exceptioin.TypeCheckingException;
-import ResultGenerator.Compile_Execute;
-import ResultGenerator.SurceCodeComposer;
-import Visitor.ASTGenerator;
-import Visitor.CoeffInference;
-import Visitor.CoeffDefinitioinCheck;
-import Visitor.Fill_STC_STM;
-import Visitor.TypeChecking;
+import typeChecking.Exceptioin.*;
+import coeffectChecking.ResultGenerator.*;
+import coeffectChecking.CoeffDefinitioinCheck;
+import coeffectChecking.CoeffInference;
+import parser.ASTGenerator;
+import parser.ANTLR4.miniJavaLexer;
+import parser.ANTLR4.miniJavaParser;
+import parser.ANTLR4.miniJavaParser.ProgramContext;
+import parser.ASTnodes.Class.NodeAST;
+import typeChecking.Fill_STC_STM;
+import typeChecking.TypeChecking;
 
 
 /**
@@ -37,7 +35,6 @@ public class MainMiniJava {
      */
 	public static void main(String[] args) throws IOException{
         
-        System.out.println("Senza concatenazione di stringhe");		//creo un char stream, posso inserire sia un file di testo che una stringa	
 		FileInputStream inputStream=null;
 		String sep= FileSystems.getDefault().getSeparator();
 		String file="CoefInference1.txt";
@@ -66,6 +63,9 @@ public class MainMiniJava {
 			ASTGenerator visitor= new ASTGenerator();
 			//eseguo la visita sull'albero
 			ArrayList<NodeAST> AST=visitor.visitProgram(p);
+			if(visitor.getNumberOfError()==0){
+
+			
 			try 
 			{
 				Fill_STC_STM firstvisit = new Fill_STC_STM(AST);
@@ -79,7 +79,7 @@ public class MainMiniJava {
 					CoeffInference secondVisit=new CoeffInference(AST,firstvisit.getClassST());
 					secondVisit.visitProgram(AST);
 					System.out.println("\tFINE INFERENZA COEFFETTI\n");					
-			        String nomeCartella = "src"+sep+"ResultGenerator"; 
+			        String nomeCartella = "src"+sep+"coeffectChecking"+sep+"ResultGenerator"; 
 			        String nomeFile = "CoeffectResult.java";
 			        String percorsoCompleto = nomeCartella + sep + nomeFile;
 			        SurceCodeComposer codiceSorgente=new SurceCodeComposer(AST,secondVisit.getClassST(),indirizzoCompleto);
@@ -95,6 +95,9 @@ public class MainMiniJava {
 				System.err.println(e1.getMessage());
 			} catch (SemanticException e1) {
 				System.err.println(e1.getMessage());
+			}
+			}else {
+				System.err.println("//////////////////////////////////////\n\tPARSING FALLITO");
 			}
 			}catch(NullPointerException e) 
 			{	

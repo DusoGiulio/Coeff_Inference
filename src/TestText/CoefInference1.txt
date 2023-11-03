@@ -3,7 +3,29 @@ class Main {
 public static void main ( String [] a ){
 System.out.println (new Pair());
 }
-}class Pair {
+}
+
+
+abstract class astratta
+{
+	abstract int intero();
+	
+	int prova()
+	{	
+		@Coeffect(coeffClass="Nat", exp="Nat.one()") int a;
+		return a;
+	}
+}
+
+class abstExt extends astratta
+{
+	int intero()
+	{
+		return 2;
+	}
+}
+
+class Pair {
 	A fst;
 	A snd;
 	boolean t;
@@ -14,15 +36,14 @@ System.out.println (new Pair());
 	}
 
 }
-
-class A {
+class A extends Pair {
 	
 	
 	A zero(@Coeffect(coeffClass="Nat", exp="Nat.one()")A this,@Coeffect(coeffClass="Nat", exp="Nat.zero()")A prova) {
 		@Coeffect(coeffClass="Nat", exp="Nat.one()") int b;
 		@Coeffect(coeffClass="Nat", exp="Nat.zero()") int c;
 		c=b;
-		return this;
+		return fst;
 	}
 
 	
@@ -58,9 +79,10 @@ class A {
 		x=7;
 		return x+x;
 	}
+
 }
 @CoeffectClass
-class Affinity {
+ abstract class  Affinity {
 
 	Affinity sup(Affinity x) {
 		Affinity result;
@@ -71,6 +93,8 @@ class Affinity {
 		return result;
 	}
 
+	
+	
 	boolean leq(Affinity x) {
 		return true;
 	}

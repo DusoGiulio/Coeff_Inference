@@ -16,17 +16,16 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
-import ANTLR4.miniJavaLexer;
-import ANTLR4.miniJavaParser;
-import ANTLR4.miniJavaParser.ProgramContext;
-import ASTnodes.Class.NodeAST;
-import Coeffect.*;
-import Exceptioin.SemanticException;
-import Exceptioin.TypeCheckingException;
-import Visitor.ASTGenerator;
-import Visitor.CoeffDefinitioinCheck;
-import Visitor.Fill_STC_STM;
-import Visitor.TypeChecking;
+import typeChecking.Exceptioin.*;
+import coeffectChecking.CoeffDefinitioinCheck;
+import coeffectChecking.Coeffect.*;
+import parser.ASTGenerator;
+import parser.ANTLR4.miniJavaLexer;
+import parser.ANTLR4.miniJavaParser;
+import parser.ANTLR4.miniJavaParser.ProgramContext;
+import parser.ASTnodes.Class.NodeAST;
+import typeChecking.Fill_STC_STM;
+import typeChecking.TypeChecking;
 
 class Test {
 	
