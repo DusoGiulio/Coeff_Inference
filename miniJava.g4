@@ -1,14 +1,14 @@
 grammar miniJava;
 
 @header {
-    package ANTLR4;
+    package parser.ANTLR4;
 }
 
 program: mainClass classDecl*;
 
 mainClass: CLASS IDENTIFIER LBRACE PUBLIC STATIC   VOID MAIN LPAREN STRING LBRACK RBRACK IDENTIFIER RPAREN LBRACE SOP LPAREN exp RPAREN SEMI RBRACE RBRACE;
 
-classDecl:(coefClass)? CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE fieldDecl* methodDecl* RBRACE;
+classDecl:(coefClass)? (ABSTRACT)? CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE fieldDecl* methodDecl*  RBRACE;
 
 fieldDecl: type IDENTIFIER SEMI;
 
@@ -22,7 +22,9 @@ typeCoeff: (coeffect)?type;
 
 coeffect: COEFFECT LPAREN CF ASSIGN DQ IDENTIFIER DQ COMMA EXP ASSIGN DQ exp DQ RPAREN;
 
-methodDecl: (STATIC)? type IDENTIFIER LPAREN (typeCoeff(THIS|IDENTIFIER) ( COMMA varDeclp )*)? RPAREN LBRACE varDecl* statement* RETURN exp SEMI RBRACE;
+methodDecl: (STATIC)? type IDENTIFIER LPAREN (typeCoeff(THIS|IDENTIFIER) ( COMMA varDeclp )*)? RPAREN LBRACE varDecl* statement* RETURN exp SEMI RBRACE |
+ABSTRACT type IDENTIFIER LPAREN (typeCoeff(THIS|IDENTIFIER) ( COMMA varDeclp )*)? RPAREN SEMI;
+
 
 type: IDENTIFIER LBRACK RBRACK
       | BOOLEAN LBRACK RBRACK
@@ -74,6 +76,7 @@ THIS:               'this';
 VOID:               'void';
 WHILE:              'while';
 MAIN:               'main';
+ABSTRACT: 			'abstract';
 STRING:             'String';
 SOP:                'System.out.println';
 LENGTH:             'lenght';
