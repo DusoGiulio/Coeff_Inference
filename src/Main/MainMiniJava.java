@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
 
+import javax.swing.SwingUtilities;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import typeChecking.Exceptioin.*;
 import coeffectChecking.ResultGenerator.*;
+import gui.Interfaccia;
 import coeffectChecking.CoeffDefinitioinCheck;
 import coeffectChecking.CoeffInference;
 import parser.ASTGenerator;
@@ -35,6 +38,13 @@ public class MainMiniJava {
      */
 	public static void main(String[] args) throws IOException{
         
+		
+		SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Interfaccia();
+            }
+        });
 		FileInputStream inputStream=null;
 		String sep= FileSystems.getDefault().getSeparator();
 		String file="CoefInference1.txt";

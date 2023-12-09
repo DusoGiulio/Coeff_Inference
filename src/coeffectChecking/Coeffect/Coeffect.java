@@ -86,6 +86,16 @@ public class Coeffect {
      * @return Il risultato dell'operazione specificata tra i coeffetti.
      */
     public Coeffect op(Coeffect coef, String op) {
+    	if(op.equals("leq")) 
+    	{
+    		if(this.coefClass.toString().contains("Triv")) 
+    		{
+    			return boolLeq(op, coef, true);
+    		}else if(coef.coefClass.toString().contains("Triv")) 
+    		{
+    			return boolLeq(op, coef, false);
+    		}
+    	}
         if (this.coefClass.equals(coef.coefClass)) {
             return sameClass(op, coef);
         } else if (this.coefClass.equals("Nat") && !coef.coefClass.equals("Nat")) {
@@ -97,7 +107,14 @@ public class Coeffect {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    private Coeffect boolLeq(String op, Coeffect coef,  boolean b) {
+    	
+    	Expression expression = ast.newBooleanLiteral(b);
+    	
+		return new Coeffect(expression, coef.coefClass);
+	}
+
+	@SuppressWarnings("unchecked")
 	private Coeffect sameClass(String op, Coeffect other) {
     	
     	MethodInvocation opInvocation = ast.newMethodInvocation();
